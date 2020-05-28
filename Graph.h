@@ -5,37 +5,39 @@
 
 
 
-// Edge of graph
-struct Edge 
-{
-	int flow; 
-	size_t capacity; 
-	size_t u; //pointer to start vertex
-	size_t v; //pointer to finish vertex
-	Edge(int flow, size_t capacity, size_t u, size_t v)
-	{
-		this->flow = flow;
-		this->capacity = capacity;
-		this->u = u;
-		this->v = v;
-	}
 
-};
-
-//Vertex of the Graph
-struct Vertex 
-{
-	size_t height; //height of the vertex 
-	size_t e_flow; //excess pre-flow
-	Vertex(size_t h, size_t e_flow)
-	{
-		this->height = h;
-		this->e_flow = e_flow;
-	}
-
-};
 class Graph
 {
+
+	// Edge of graph
+	struct Edge
+	{
+		int flow;
+		size_t capacity;
+		size_t u; //pointer to start vertex
+		size_t v; //pointer to finish vertex
+		Edge(int flow, size_t capacity, size_t u, size_t v)
+		{
+			this->flow = flow;
+			this->capacity = capacity;
+			this->u = u;
+			this->v = v;
+		}
+
+	};
+
+	//Vertex of the Graph
+	struct Vertex
+	{
+		size_t height; //height of the vertex 
+		size_t e_flow; //excess pre-flow
+		Vertex(size_t h, size_t e_flow)
+		{
+			this->height = h;
+			this->e_flow = e_flow;
+		}
+
+	};
 	List<Vertex*> VertexList;
 	List<Edge*> EdgeList;
 	Map <char, size_t> VertexMap;
