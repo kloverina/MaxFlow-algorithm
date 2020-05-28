@@ -1,0 +1,10 @@
+S B 16
+S D 13
+B D 10
+D B 4
+B K 12
+K D 9
+D P 13
+P K 8
+P T 4
+K T 20
