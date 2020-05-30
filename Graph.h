@@ -13,14 +13,14 @@ class Graph
 	{
 		int flow;
 		size_t capacity;
-		size_t u; //pointer to start vertex
-		size_t v; //pointer to finish vertex
-		Edge(int flow, size_t capacity, size_t u, size_t v)
+		size_t Start_Vertex; //pointer to start vertex
+		size_t End_Vertex; //pointer to finish vertex
+		Edge(int flow, size_t capacity, size_t Start_Vertex, size_t End_Vertex)
 		{
 			this->flow = flow;
 			this->capacity = capacity;
-			this->u = u;
-			this->v = v;
+			this->Start_Vertex = Start_Vertex;
+			this->End_Vertex = End_Vertex;
 		}
 
 	};

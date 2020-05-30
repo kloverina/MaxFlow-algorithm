@@ -2,7 +2,8 @@
 #include<string>
 #include <fstream>
 #include <sstream>
-
+#define LAST_VERTEX 'T'
+#define START_VERTEX 'S'
 using std::cout;
 using std::endl;
 
@@ -14,6 +15,8 @@ void Graph::getFrom(std::string path)
 {
 	std::ifstream file(path.c_str());
 	std::string line;
+	std::string flag_LastV; //checks if the last vertex is 'T'
+	bool first_line = true;
 	if (file.is_open())
 	{
 		while (getline(file, line))
@@ -24,11 +27,18 @@ void Graph::getFrom(std::string path)
 			if (from.size() > 1 || from.empty() || to.size() > 1 || to.empty()
 				|| weight.empty() || !other.empty())
 				throw std::invalid_argument("Wrong data format in the file!");
+			if (first_line)
+				if (from.at(0) != START_VERTEX)
+					throw std::invalid_argument("First vertex must be 'S'!");
 			AddEdge(from.at(0), to.at(0), stoi(weight));
+			first_line = false;
+			flag_LastV = to;
 		}
+
 		if (!EdgeList.get_size())
 			throw std::invalid_argument("File is empty!");
-		
+		if (flag_LastV != "T")
+			throw std::invalid_argument("Last vertex must be 'T'!");
 	}
 	else 
 		throw std::logic_error("No file was found!");
@@ -50,13 +60,13 @@ size_t Graph::getMaxFlow()
 /////////////////  PRIVATE METHODS  /////////////////////
 
 //ads vertex to VertexMap and edge between them to EdgeList
-void Graph::AddEdge(char u, char v, size_t capacity)
+void Graph::AddEdge(char Start_Vertex, char End_Vertex, size_t capacity)
 {
-	if (!VertexMap.contains(u))
-		VertexMap.insert(u,VertexMap.get_size());
-	if (!VertexMap.contains(v))
-		VertexMap.insert(v, VertexMap.get_size());
-	EdgeList.push_back(new Edge(0, capacity, VertexMap.find(u), VertexMap.find(v)));
+	if (!VertexMap.contains(Start_Vertex))
+		VertexMap.insert(Start_Vertex,VertexMap.get_size());
+	if (!VertexMap.contains(End_Vertex))
+		VertexMap.insert(End_Vertex, VertexMap.get_size());
+	EdgeList.push_back(new Edge(0, capacity, VertexMap.find(Start_Vertex), VertexMap.find(End_Vertex)));
 }
 
 //counts maximum flow
@@ -72,23 +82,23 @@ void Graph::MaxFlow()
 	while (iterator->has_next())
 	{
 		auto cur_edge = iterator->next();
-		if (cur_edge->u == source)
+		if (cur_edge->Start_Vertex == source)
 		{
 			//flow becames equal to capacity
 			cur_edge->flow = cur_edge->capacity;
 
-			//counts excess flow for the nearest vertex to v
-			VertexList.at(cur_edge->v)->e_flow += cur_edge->flow;
+			//counts excess flow for the nearest vertex to v(start vertex)
+			VertexList.at(cur_edge->End_Vertex)->e_flow += cur_edge->flow;
 
-			//ads edge from v to s with zero capacity
-			EdgeList.push_back(new Edge(-cur_edge->flow, 0, cur_edge->v, source));
+			//ads edge from v(end vertex) to s with zero capacity
+			EdgeList.push_back(new Edge(-cur_edge->flow, 0, cur_edge->End_Vertex, source));
 		}
 	}
-	int u;
-	while ((u = OverFlowVertex()) != -1)
+	int Start_Vertex;
+	while ((Start_Vertex = OverFlowVertex()) != -1)
 	{
-		if (!Push(u))
-			Relabel(u);
+		if (!Push(Start_Vertex))
+			Relabel(Start_Vertex);
 	}
 }
 
@@ -110,21 +120,21 @@ int Graph::OverFlowVertex()
 }
 
 // Pushes the flow from the overflowing vertex u
-bool Graph::Push(int u)
+bool Graph::Push(int vertex)
 {
 	auto iterator = EdgeList.create_list_iterator();
 	while (iterator->has_next())
 	{
 		auto current_edge = iterator->next();
-		if (current_edge->u == u)
+		if (current_edge->Start_Vertex == vertex)
 		{
 			//if the flow is equal to capacity 
 			if (current_edge->flow == current_edge->capacity)
 				continue;
 
 			//Pushing is possible only if height of the vertex is less then height of an overflowed vertex
-			auto cur_vertex = VertexList.at(u);
-			if (cur_vertex->height > VertexList.at(current_edge->v)->height)
+			auto cur_vertex = VertexList.at(vertex);
+			if (cur_vertex->height > VertexList.at(current_edge->End_Vertex)->height)
 			{
 				
 				//pushed flow = the least from remaining flow on the edge or exess flow
@@ -133,7 +143,7 @@ bool Graph::Push(int u)
 					flow = current_edge->capacity - current_edge->flow;
 				else  flow = cur_vertex->e_flow;
 				cur_vertex->e_flow -= flow;
-				VertexList.at(current_edge->v)->e_flow += flow;
+				VertexList.at(current_edge->End_Vertex)->e_flow += flow;
 
 				//adding remaining flow
 				current_edge->flow += flow;
@@ -147,7 +157,7 @@ bool Graph::Push(int u)
 
 
 //lifts the vertex
-void Graph::Relabel(int u)
+void Graph::Relabel(int vertex)
 {
 	int max_height = INT_MAX;
 
@@ -156,15 +166,15 @@ void Graph::Relabel(int u)
 	while (iterator->has_next())
 	{
 		auto cur_edge = iterator->next();
-		if (cur_edge->u == u)
+		if (cur_edge->Start_Vertex == vertex)
 		{
 			if (cur_edge->flow == cur_edge->capacity)
 				continue;
-			auto cur_vertex = VertexList.at(cur_edge->v);
+			auto cur_vertex = VertexList.at(cur_edge->End_Vertex);
 			if (cur_vertex->height < max_height)
 			{
 				max_height = cur_vertex->height;
-				VertexList.at(u)->height = max_height + 1;
+				VertexList.at(vertex)->height = max_height + 1;
 			}
 		}
 	}
@@ -174,17 +184,17 @@ void Graph::Relabel(int u)
 //creates a reverse edge 
 void Graph::ReverseEdgeFlow(Edge*& current_edge, int flow)
 {
-	size_t u = current_edge->v;
-	size_t v = current_edge->u;
+	size_t Start_Vertex = current_edge->End_Vertex;
+	size_t End_Vertex = current_edge->Start_Vertex;
 	auto iterator = EdgeList.create_list_iterator();
 	while (iterator->has_next())
 	{
 		auto reverse_edge = iterator->next();
-		if (reverse_edge->v == v && reverse_edge->u == u)
+		if (reverse_edge->End_Vertex == End_Vertex && reverse_edge->Start_Vertex == Start_Vertex)
 		{
 			reverse_edge->flow -= flow;
 			return;
 		}
 	}
-	EdgeList.push_back(new Edge(0, flow, u, v));
+	EdgeList.push_back(new Edge(0, flow, Start_Vertex, End_Vertex));
 }
