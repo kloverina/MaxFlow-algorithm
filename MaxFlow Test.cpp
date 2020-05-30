@@ -66,13 +66,52 @@ namespace MaxFlowTest
 			}
 		}
 
+		TEST_METHOD(getFrom_wrong_format_last_vertex)
+		{
+			////data from file 
+
+			////A B 4
+			////B C 10
+			////C T 30
+			////K C 12
+			////C B 20
+			try
+			{
+				Graph g;
+				g.getFrom("C:\\Users\\Кристина\\source\\repos\\MaxFlow algorithm\\MaxFlow algorithm\\Wrong_Data2.txt");
+
+			}
+			catch (std::exception error)
+			{
+				Assert::AreEqual(error.what(), "Last vertex must be 'T'!");
+			}
+		}
+
+		TEST_METHOD(getFrom_wrong_data_format_first_v)
+		{
+			///A B 4
+			///B C 10
+			///C T 30
+			///K C 12
+			///C T 20
+			try
+			{
+				Graph g;
+				g.getFrom("C:\\Users\\Кристина\\source\\repos\\MaxFlow algorithm\\MaxFlow algorithm\\Wrong_Data4.txt");
+
+			}
+			catch (std::exception error)
+			{
+				Assert::AreEqual(error.what(), "First vertex must be 'S'!");
+			}
+		}
 	
-		TEST_METHOD(getFrom_wrong_format_data2)
+		TEST_METHOD(getFrom_wrong_format_data3)
 		{
 			/////data from wrong file/////
-			///Sa T 3
-			///S C 12
-			///C G 5
+			///S T 3
+			///Sa C 12
+			///C Ga 5
 			///G T 2
 			///C T 10
 			try
